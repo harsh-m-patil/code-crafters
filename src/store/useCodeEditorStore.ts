@@ -1,19 +1,18 @@
-//import { LANGUAGE_CONFIG } from "@/app/(root)/_constants";
-import type { CodeEditorState } from "@/types";
-import { Monaco } from "@monaco-editor/react";
+import { CodeEditorState } from "@/types";
 import { create } from "zustand";
+import { Monaco } from "@monaco-editor/react";
 
 const getInitialState = () => {
-  // If we are in the server, return the default values
-  if (typeof window === "undefined")
+  // if we're on the server, return default values
+  if (typeof window === "undefined") {
     return {
       language: "javascript",
       fontSize: 16,
       theme: "vs-dark",
     };
+  }
 
-  // Otherwise, get the values from the local storage because localStorage
-  // is not available in the server
+  // if we're on the client, return values from local storage bc localStorage is a browser API.
   const savedLanguage = localStorage.getItem("editor-language") || "javascript";
   const savedTheme = localStorage.getItem("editor-theme") || "vs-dark";
   const savedFontSize = localStorage.getItem("editor-font-size") || 16;
@@ -51,24 +50,27 @@ export const useCodeEditorStore = create<CodeEditorState>((set, get) => {
     },
 
     setFontSize: (fontSize: number) => {
-      localStorage.setItem("editor-font-size", String(fontSize));
+      localStorage.setItem("editor-font-size", fontSize.toString());
       set({ fontSize });
     },
 
     setLanguage: (language: string) => {
-      // Save the code of the previous language before switching
-      const currentCode = get().editor?.getValue() || "";
+      // Save current language code before switching
+      const currentCode = get().editor?.getValue();
       if (currentCode) {
         localStorage.setItem(`editor-code-${get().language}`, currentCode);
       }
 
-      // set the new language
       localStorage.setItem("editor-language", language);
 
-      set({ language, output: "", error: null });
+      set({
+        language,
+        output: "",
+        error: null,
+      });
     },
 
-    // TODO: Implement this function
+    //TODO: implement runCode function
     runCode: async () => {},
   };
 });
